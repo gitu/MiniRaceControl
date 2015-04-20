@@ -6,7 +6,6 @@ import os
 import os.path
 import pygame
 from pygame.locals import *
-import cPickle as pickle
 
 
 # UI classes ---------------------------------------------------------------
@@ -136,10 +135,10 @@ buttons = [
     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
      Button((400, 0, 80, 52), bg='next', cb=settingCallback, value=1),
      Button((0, 10, 480, 35), bg='gear')],
-     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
-      Button((400, 0, 80, 52), bg='next', cb=settingCallback, value=1),
-      Button((180, 80, 100, 120), bg='quit-ok', cb=quitCallback),
-      Button((0, 10, 480, 35), bg='quit')]
+    [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
+     Button((400, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+     Button((180, 80, 100, 120), bg='quit-ok', cb=quitCallback),
+     Button((0, 10, 480, 35), bg='quit')]
 ]
 
 
@@ -195,14 +194,14 @@ while (True):
     while True:
         screen_change = 0
         for event in pygame.event.get():
-            if(event.type is MOUSEBUTTONDOWN):
+            if (event.type is MOUSEBUTTONDOWN):
                 pos = pygame.mouse.get_pos()
                 for b in buttons[screenMode]:
                     if b.selected(pos): break
                 screen_change = 1
 
 
-        #if screenMode >= 1 or screenMode != screenModePrior: break
+        # if screenMode >= 1 or screenMode != screenModePrior: break
         if screen_change == 1 or screenMode != screenModePrior: break
 
     if img is None:  # clear background

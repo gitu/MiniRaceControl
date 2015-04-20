@@ -113,11 +113,13 @@ def quitCallback():  # Quit confirmation button
     raise SystemExit
 
 
-def settingCallback(n): # Pass 1 (next setting) or -1 (prev setting)
+def settingCallback(n):  # Pass 1 (next setting) or -1 (prev setting)
     global screenMode
     screenMode += n
-    if screenMode < 0:               screenMode = len(buttons) - 1
-    elif screenMode >= len(buttons): screenMode = 0
+    if screenMode < 0:
+        screenMode = len(buttons) - 1
+    elif screenMode >= len(buttons):
+        screenMode = 0
 
 
 # Global stuff -------------------------------------------------------------
@@ -141,15 +143,16 @@ icons = []  # This list gets populated at startup
 
 buttons = [
     # Screen mode 8 is quit confirmation
-    [Button((  0,  0, 80, 52), bg='prev'   , cb=settingCallback, value=-1),
-     Button((240,  0, 80, 52), bg='next'   , cb=settingCallback, value= 1),
-     Button((110, 60,100,120), bg='quit-ok', cb=quitCallback),
-     Button((  0, 10,320, 35), bg='quit'),
-    # Screen mode 8 is quit confirmation
-    [Button((  0,  0, 80, 52), bg='prev'   , cb=settingCallback, value=-1),
-     Button((240,  0, 80, 52), bg='next'   , cb=settingCallback, value= 1),
-     Button((110, 60,100,120), bg='quit-ok', cb=quitCallback),
-     Button((  0, 10,320, 35), bg='quit')]]
+    [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
+     Button((240, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+     Button((110, 60, 100, 120), bg='quit-ok', cb=quitCallback),
+     Button((0, 10, 320, 35), bg='quit')],
+     # Screen mode 8 is quit confirmation
+     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
+      Button((240, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+      Button((110, 60, 100, 120), bg='quit-ok', cb=quitCallback),
+      Button((0, 10, 320, 35), bg='quit')]
+]
 
 
 # Assorted utility functions -----------------------------------------------
@@ -165,6 +168,7 @@ def saveSettings():
         outfile.close()
     except:
         pass
+
 
 def loadSettings():
     global v
@@ -215,9 +219,8 @@ for s in buttons:  # For each screenful of buttons...
 print "loading background.."
 img = pygame.image.load("images/bg.png")
 
-
 print"Load Settings"
-loadSettings() # Must come last; fiddles with Button/Icon states
+loadSettings()  # Must come last; fiddles with Button/Icon states
 
 
 # Main loop ----------------------------------------------------------------

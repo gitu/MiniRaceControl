@@ -113,11 +113,17 @@ def quitCallback():  # Quit confirmation button
     raise SystemExit
 
 
+def settingCallback(n): # Pass 1 (next setting) or -1 (prev setting)
+    global screenMode
+    screenMode += n
+    if screenMode < 0:               screenMode = len(buttons) - 1
+    elif screenMode >= len(buttons): screenMode = 0
+
+
 # Global stuff -------------------------------------------------------------
 
 screenMode = 0  # Current screen mode; default = viewfinder
 screenModePrior = -1  # Prior screen mode (for detecting changes)
-settingMode = 4  # Last-used settings mode (default = storage)
 iconPath = 'icons'  # Subdirectory containing UI bitmaps (PNG format)
 saveIdx = -1  # Image index for saving (-1 = none set yet)
 loadIdx = -1  # Image index for loading
@@ -134,8 +140,16 @@ icons = []  # This list gets populated at startup
 # tangle of code elsewhere.
 
 buttons = [
-    Button((110, 60, 100, 120), bg='quit-ok', cb=quitCallback),
-    Button((0, 10, 320, 35), bg='quit')]
+    # Screen mode 8 is quit confirmation
+    [Button((  0,  0, 80, 52), bg='prev'   , cb=settingCallback, value=-1),
+     Button((240,  0, 80, 52), bg='next'   , cb=settingCallback, value= 1),
+     Button((110, 60,100,120), bg='quit-ok', cb=quitCallback),
+     Button((  0, 10,320, 35), bg='quit'),
+    # Screen mode 8 is quit confirmation
+    [Button((  0,  0, 80, 52), bg='prev'   , cb=settingCallback, value=-1),
+     Button((240,  0, 80, 52), bg='next'   , cb=settingCallback, value= 1),
+     Button((110, 60,100,120), bg='quit-ok', cb=quitCallback),
+     Button((  0, 10,320, 35), bg='quit')]]
 
 
 # Assorted utility functions -----------------------------------------------

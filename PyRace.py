@@ -133,51 +133,17 @@ scaled = None  # pygame Surface w/last-loaded image
 
 icons = []  # This list gets populated at startup
 
-# buttons[] is a list of lists; each top-level list element corresponds
-# to one screen mode (e.g. viewfinder, image playback, storage settings),
-# and each element within those lists corresponds to one UI button.
-# There's a little bit of repetition (e.g. prev/next buttons are
-# declared for each settings screen, rather than a single reusable
-# set); trying to reuse those few elements just made for an ugly
-# tangle of code elsewhere.
-
 buttons = [
-    # Screen mode 8 is quit confirmation
     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
      Button((240, 0, 80, 52), bg='next', cb=settingCallback, value=1),
      Button((110, 60, 100, 120), bg='quit-ok', cb=quitCallback),
      Button((0, 10, 320, 35), bg='quit')],
-     # Screen mode 8 is quit confirmation
      [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
       Button((240, 0, 80, 52), bg='next', cb=settingCallback, value=1),
       Button((110, 60, 100, 120), bg='quit-ok', cb=quitCallback),
       Button((0, 10, 320, 35), bg='quit')]
 ]
 
-
-# Assorted utility functions -----------------------------------------------
-
-
-def saveSettings():
-    global v
-    try:
-        outfile = open('pyrace.pkl', 'wb')
-        # Use a dictionary (rather than pickling 'raw' values) so
-        # the number & order of things can change without breaking.
-        pickle.dump(v, outfile)
-        outfile.close()
-    except:
-        pass
-
-
-def loadSettings():
-    global v
-    try:
-        infile = open('pyrace.pkl', 'rb')
-        v = pickle.load(infile)
-        infile.close()
-    except:
-        pass
 
 # Initialization -----------------------------------------------------------
 
@@ -204,6 +170,7 @@ print "Loading Icons..."
 for file in os.listdir(iconPath):
     if fnmatch.fnmatch(file, '*.png'):
         icons.append(Icon(file.split('.')[0]))
+
 # Assign Icons to Buttons, now that they're loaded
 print"Assigning Buttons"
 for s in buttons:  # For each screenful of buttons...
@@ -220,7 +187,6 @@ print "loading background.."
 img = pygame.image.load("images/bg.png")
 
 print"Load Settings"
-loadSettings()  # Must come last; fiddles with Button/Icon states
 
 
 # Main loop ----------------------------------------------------------------
@@ -231,17 +197,15 @@ while (True):
     while True:
         screen_change = 0
         for event in pygame.event.get():
-            if (event.type is MOUSEBUTTONDOWN):
+            if(event.type is MOUSEBUTTONDOWN):
                 pos = pygame.mouse.get_pos()
                 for b in buttons[screenMode]:
                     if b.selected(pos): break
-                    # If in viewfinder or settings modes, stop processing touchscreen
-                    # and refresh the display to show the live preview.  In other modes
-                    # (image playback, etc.), stop and refresh the screen only when
-                    # screenMode changes.
                 screen_change = 1
 
-    if screen_change == 1 or screenMode != screenModePrior: break
+
+        #if screenMode >= 1 or screenMode != screenModePrior: break
+        if screen_change == 1 or screenMode != screenModePrior: break
 
     if img is None:  # clear background
         screen.fill(0)
@@ -256,5 +220,5 @@ while (True):
 
     pygame.display.update()
 
-    screenModePrior = screenMode
+
 

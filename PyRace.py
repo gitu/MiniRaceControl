@@ -1,38 +1,211 @@
-import os
-import pygame
-import time
-import random
- 
+# Based on cam.py by Phil Burgess / Paint Your Dragon for Adafruit Industries.
+# BSD license, all text above must be included in any redistribution.
 
- 
-class pyscope :
-    screen = None;
-    
-    def __init__(self):
-        os.environ["SDL_FBDEV"] = "/dev/fb1"
-        pygame.init() 
-        
-        size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
-        print "Framebuffer size: %d x %d" % (size[0], size[1])
-        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-        # Clear the screen to start
-        self.screen.fill((0, 0, 0))        
-        # Initialise font support
-        pygame.font.init()
-        # Render the screen
-        pygame.display.update()
- 
-    def __del__(self):
-        "Destructor to make sure pygame shuts down, etc."
- 
-    def test(self):
-        # Fill the screen with red (255, 0, 0)
-        red = (255, 0, 0)
-        self.screen.fill(red)
-        # Update the display
-        pygame.display.update()
- 
-# Create an instance of the PyScope class
-scope = pyscope()
-scope.test()
-time.sleep(10)
+import atexit
+import cPickle as pickle
+import errno
+import fnmatch
+import io
+import os
+import os.path
+import picamera
+import pygame
+import stat
+import threading
+import time
+import yuv2rgb
+from pygame.locals import *
+from subprocess import call  
+
+
+# UI classes ---------------------------------------------------------------
+
+# Small resistive touchscreen is best suited to simple tap interactions.
+# Importing a big widget library seemed a bit overkill.  Instead, a couple
+# of rudimentary classes are sufficient for the UI elements:
+
+# Icon is a very simple bitmap class, just associates a name and a pygame
+# image (PNG loaded from icons directory) for each.
+# There isn't a globally-declared fixed list of Icons.  Instead, the list
+# is populated at runtime from the contents of the 'icons' directory.
+
+class Icon:
+
+	def __init__(self, name):
+	  self.name = name
+	  try:
+	    self.bitmap = pygame.image.load(iconPath + '/' + name + '.png')
+	  except:
+	    pass
+
+# Button is a simple tappable screen region.  Each has:
+#  - bounding rect ((X,Y,W,H) in pixels)
+#  - optional background color and/or Icon (or None), always centered
+#  - optional foreground Icon, always centered
+#  - optional single callback function
+#  - optional single value passed to callback
+# Occasionally Buttons are used as a convenience for positioning Icons
+# but the taps are ignored.  Stacking order is important; when Buttons
+# overlap, lowest/first Button in list takes precedence when processing
+# input, and highest/last Button is drawn atop prior Button(s).  This is
+# used, for example, to center an Icon by creating a passive Button the
+# width of the full screen, but with other buttons left or right that
+# may take input precedence (e.g. the Effect labels & buttons).
+# After Icons are loaded at runtime, a pass is made through the global
+# buttons[] list to assign the Icon objects (from names) to each Button.
+
+class Button:
+
+	def __init__(self, rect, **kwargs):
+	  self.rect     = rect # Bounds
+	  self.color    = None # Background fill color, if any
+	  self.iconBg   = None # Background Icon (atop color fill)
+	  self.iconFg   = None # Foreground Icon (atop background)
+	  self.bg       = None # Background Icon name
+	  self.fg       = None # Foreground Icon name
+	  self.callback = None # Callback function
+	  self.value    = None # Value passed to callback
+	  for key, value in kwargs.iteritems():
+	    if   key == 'color': self.color    = value
+	    elif key == 'bg'   : self.bg       = value
+	    elif key == 'fg'   : self.fg       = value
+	    elif key == 'cb'   : self.callback = value
+	    elif key == 'value': self.value    = value
+
+	def selected(self, pos):
+	  x1 = self.rect[0]
+	  y1 = self.rect[1]
+	  x2 = x1 + self.rect[2] - 1
+	  y2 = y1 + self.rect[3] - 1
+	  if ((pos[0] >= x1) and (pos[0] <= x2) and
+	      (pos[1] >= y1) and (pos[1] <= y2)):
+	    if self.callback:
+	      if self.value is None: self.callback()
+	      else:                  self.callback(self.value)
+	    return True
+	  return False
+
+	def draw(self, screen):
+	  if self.color:
+	    screen.fill(self.color, self.rect)
+	  if self.iconBg:
+	    screen.blit(self.iconBg.bitmap,
+	      (self.rect[0]+(self.rect[2]-self.iconBg.bitmap.get_width())/2,
+	       self.rect[1]+(self.rect[3]-self.iconBg.bitmap.get_height())/2))
+	  if self.iconFg:
+	    screen.blit(self.iconFg.bitmap,
+	      (self.rect[0]+(self.rect[2]-self.iconFg.bitmap.get_width())/2,
+	       self.rect[1]+(self.rect[3]-self.iconFg.bitmap.get_height())/2))
+
+	def setBg(self, name):
+	  if name is None:
+	    self.iconBg = None
+	  else:
+	    for i in icons:
+	      if name == i.name:
+	        self.iconBg = i
+	        break
+
+
+# UI callbacks -------------------------------------------------------------
+# These are defined before globals because they're referenced by items in
+# the global buttons[] list.
+
+def quitCallback(): # Quit confirmation button
+	saveSettings()
+	raise SystemExit
+
+
+# Global stuff -------------------------------------------------------------
+
+screenMode      =  0      # Current screen mode; default = viewfinder
+screenModePrior = -1      # Prior screen mode (for detecting changes)
+settingMode     =  4      # Last-used settings mode (default = storage)
+iconPath        = 'icons' # Subdirectory containing UI bitmaps (PNG format)
+saveIdx         = -1      # Image index for saving (-1 = none set yet)
+loadIdx         = -1      # Image index for loading
+scaled          = None    # pygame Surface w/last-loaded image
+
+icons = [] # This list gets populated at startup
+
+# buttons[] is a list of lists; each top-level list element corresponds
+# to one screen mode (e.g. viewfinder, image playback, storage settings),
+# and each element within those lists corresponds to one UI button.
+# There's a little bit of repetition (e.g. prev/next buttons are
+# declared for each settings screen, rather than a single reusable
+# set); trying to reuse those few elements just made for an ugly
+# tangle of code elsewhere.
+
+buttons = [
+   Button((110, 60,100,120), bg='quit-ok', cb=quitCallback),
+   Button((  0, 10,320, 35), bg='quit')]
+]
+
+# Initialization -----------------------------------------------------------
+
+# Init framebuffer/touchscreen environment variables
+os.putenv('SDL_VIDEODRIVER', 'fbcon')
+os.putenv('SDL_FBDEV'      , '/dev/fb1')
+os.putenv('SDL_MOUSEDRV'   , 'TSLIB')
+os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
+
+# Get user & group IDs for file & folder creation
+# (Want these to be 'pi' or other user, not root)
+s = os.getenv("SUDO_UID")
+uid = int(s) if s else os.getuid()
+s = os.getenv("SUDO_GID")
+gid = int(s) if s else os.getgid()
+
+# Init pygame and screen
+pygame.init()
+pygame.mouse.set_visible(False)
+screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+
+# Load all icons at startup.
+for file in os.listdir(iconPath):
+  if fnmatch.fnmatch(file, '*.png'):
+    icons.append(Icon(file.split('.')[0]))
+
+# Assign Icons to Buttons, now that they're loaded
+for s in buttons:        # For each screenful of buttons...
+  for b in s:            #  For each button on screen...
+    for i in icons:      #   For each icon...
+      if b.bg == i.name: #    Compare names; match?
+        b.iconBg = i     #     Assign Icon to Button
+        b.bg     = None  #     Name no longer used; allow garbage collection
+      if b.fg == i.name:
+        b.iconFg = i
+        b.fg     = None
+
+print "loading background.."
+img    = pygame.image.load("icons/PiPhone.png")
+
+
+# Main loop ----------------------------------------------------------------
+
+while(True):
+
+  # Process touchscreen input
+  while True:
+    for event in pygame.event.get():
+      if(event.type is MOUSEBUTTONDOWN):
+        pos = pygame.mouse.get_pos()
+        for b in buttons[screenMode]:
+          if b.selected(pos): break
+    # If in viewfinder or settings modes, stop processing touchscreen
+    # and refresh the display to show the live preview.  In other modes
+    # (image playback, etc.), stop and refresh the screen only when
+    # screenMode changes.
+
+
+  if img is None or img.get_height() < 240: # Letterbox, clear background
+    screen.fill(0)
+  if img:
+    screen.blit(img,
+      ((320 - img.get_width() ) / 2,
+       (240 - img.get_height()) / 2))
+
+  # Overlay buttons on display and update
+  for i,b in enumerate(buttons[screenMode]):
+    b.draw(screen)
+  pygame.display.update()

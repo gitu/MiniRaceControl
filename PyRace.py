@@ -109,7 +109,6 @@ class Button:
 # the global buttons[] list.
 
 def quitCallback():  # Quit confirmation button
-    saveSettings()
     raise SystemExit
 
 
@@ -135,13 +134,12 @@ icons = []  # This list gets populated at startup
 
 buttons = [
     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
-     Button((240, 0, 80, 52), bg='next', cb=settingCallback, value=1),
-     Button((110, 60, 100, 120), bg='quit-ok', cb=quitCallback),
-     Button((0, 10, 320, 35), bg='quit')],
+     Button((320, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+     Button((0, 10, 480, 35), bg='gear')],
      [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
-      Button((240, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+      Button((320, 0, 80, 52), bg='next', cb=settingCallback, value=1),
       Button((110, 60, 100, 120), bg='quit-ok', cb=quitCallback),
-      Button((0, 10, 320, 35), bg='quit')]
+      Button((0, 10, 480, 35), bg='quit')]
 ]
 
 
@@ -211,8 +209,8 @@ while (True):
         screen.fill(0)
     if img:
         screen.blit(img,
-                    ((320 - img.get_width()) / 2,
-                     (240 - img.get_height()) / 2))
+                    ((480 - img.get_width()) / 2,
+                     (320 - img.get_height()) / 2))
 
     # Overlay buttons on display and update
     for i, b in enumerate(buttons[screenMode]):

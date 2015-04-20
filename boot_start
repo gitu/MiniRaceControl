@@ -5,8 +5,6 @@ echo "##########################"
 echo "Starting Mini Race Control"
 echo "##########################"
 
-sleep 5
-
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
@@ -15,14 +13,29 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-cd $DIR
 
+count=0
+echo "will now wait for FireBase"
+until $(curl --output /dev/null --silent --head --fail https://www.firebase.com/); do
+    (( count++ ));
+    if [ ${count} -ge 30 ]; then
+        echo ' [timed out]';
+        sudo lsof -i
+        echo "https://www.firebase.com/"
+        curl https://www.firebase.com/;
+        exit 1;
+    fi;
+    printf '.';
+    sleep 1;
+done
+echo " [server responded after approx ${count}s]"
+
+cd $DIR
 sudo -u pi git pull
 
 echo "##########################"
-echo "sleeping"
 
-sleep 10
+
 
 echo "##########################"
 echo "done"

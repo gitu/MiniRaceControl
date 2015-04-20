@@ -137,6 +137,9 @@ buttons = [
      Button((0, 10, 480, 35), bg='stats')],
     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
      Button((400, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+     Button((0, 10, 480, 35), bg='console')],
+    [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
+     Button((400, 0, 80, 52), bg='next', cb=settingCallback, value=1),
      Button((190, 80, 100, 120), bg='quit-ok', cb=quitCallback),
      Button((0, 10, 480, 35), bg='quit')]
 ]

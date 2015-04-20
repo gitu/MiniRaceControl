@@ -138,8 +138,7 @@ icons = [] # This list gets populated at startup
 
 buttons = [
    Button((110, 60,100,120), bg='quit-ok', cb=quitCallback),
-   Button((  0, 10,320, 35), bg='quit')]
-]
+   Button((  0, 10,320, 35), bg='quit')]]
 
 # Initialization -----------------------------------------------------------
 

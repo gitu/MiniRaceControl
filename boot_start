@@ -2,6 +2,8 @@
 
 set -e
 
+echo "Starting Mini Race Control"
+
 sleep 5
 
 SOURCE="${BASH_SOURCE[0]}"
@@ -16,6 +18,7 @@ cd $DIR
 
 git pull
 
+echo "sleeping"
 
 sleep 10
 

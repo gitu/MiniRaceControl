@@ -134,11 +134,11 @@ icons = []  # This list gets populated at startup
 
 buttons = [
     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
-     Button((320, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+     Button((480, 0, 80, 52), bg='next', cb=settingCallback, value=1),
      Button((0, 10, 480, 35), bg='gear')],
      [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
-      Button((320, 0, 80, 52), bg='next', cb=settingCallback, value=1),
-      Button((110, 60, 100, 120), bg='quit-ok', cb=quitCallback),
+      Button((480, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+      Button((180, 80, 100, 120), bg='quit-ok', cb=quitCallback),
       Button((0, 10, 480, 35), bg='quit')]
 ]
 

@@ -14,14 +14,14 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 
 count=0
-echo "will now wait for FireBase"
-until $(curl --output /dev/null --silent --head --fail https://www.firebase.com/); do
+echo "will now wait for google"
+until $(curl --output /dev/null --silent --head --fail https://www.google.ch); do
     (( count++ ));
     if [ ${count} -ge 30 ]; then
         echo ' [timed out]';
         sudo lsof -i
-        echo "https://www.firebase.com/"
-        curl https://www.firebase.com/;
+        echo "https://www.google.ch"
+        curl https://www.google.ch;
         exit 1;
     fi;
     printf '.';

@@ -199,7 +199,7 @@ for s in buttons:  # For each screenful of buttons...
                 b.fg = None
 
 print "loading background.."
-img = pygame.image.load("icons/PiPhone.png")
+img = pygame.image.load("images/bg.png")
 
 
 print"Load Settings"

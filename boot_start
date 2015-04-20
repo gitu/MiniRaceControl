@@ -35,8 +35,14 @@ cd $DIR
 sudo -u pi git pull
 
 echo "##########################"
+echo "sync"
 
-sudo python PyRace.py
+sync
+
+echo "##########################"
+echo "start pirace"
+
+sudo python PiRace.py
 
 
 echo "##########################"

@@ -36,6 +36,7 @@ sudo -u pi git pull
 
 echo "##########################"
 
+sudo python PyRace.py
 
 
 echo "##########################"

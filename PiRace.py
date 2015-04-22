@@ -143,6 +143,7 @@ icons = []  # This list gets populated at startup
 rounds = []
 new_round = 0
 
+pygame.font.init()
 myfont = pygame.font.SysFont("monospace", 15)
 
 buttons = [

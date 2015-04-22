@@ -243,7 +243,7 @@ while True:
 
     if screenMode == 0:
         for idx, result in enumerate(rounds[::-1]):
-            print(result)
+            print(result[0])
             text = myfont.render(result.car + ' - ' + str(result.time / 1000.0) + 's', 1, (10, 10, 10))
             textpos = text.get_rect()
             textpos.centerx = screen.get_rect().centerx

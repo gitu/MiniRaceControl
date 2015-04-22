@@ -5,12 +5,11 @@ import fnmatch
 import os
 
 import os.path
-from pprint import pprint
-from threading import Thread
 
 import pygame
 from pygame.locals import *
 from PiControl import RaceTrack
+
 
 
 
@@ -130,6 +129,7 @@ def settingCallback(n):  # Pass 1 (next setting) or -1 (prev setting)
 
 
 def catch_round_result(round):
+    global new_round
     rounds.append(rounds)
     new_round = 1
 

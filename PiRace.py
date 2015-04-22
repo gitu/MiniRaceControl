@@ -148,7 +148,7 @@ rounds = []
 new_round = 0
 
 pygame.font.init()
-myfont = pygame.font.SysFont("monospace", 15)
+myfont = pygame.font.SysFont("monospace", 40)
 
 buttons = [
     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
@@ -246,7 +246,7 @@ while True:
             text = myfont.render('car ' + str(result['car']) + ' - ' + str(result['time'] / 1000.0) + 's', 1, (10, 10, 10))
             textpos = text.get_rect()
             textpos.centerx = screen.get_rect().centerx
-            textpos.top = idx * myfont.get_linesize() + 60
+            textpos.top = idx * myfont.get_linesize() + 80
             screen.blit(text, textpos)
             if idx > 4:
                 break

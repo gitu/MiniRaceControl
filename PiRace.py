@@ -184,6 +184,9 @@ uid = int(s) if s else os.getuid()
 s = os.getenv("SUDO_GID")
 gid = int(s) if s else os.getgid()
 
+print str(len(sys.argv))
+if len(sys.argv) > 1:
+    print (sys.argv[1])
 send_to_fb = len(sys.argv) > 1 and sys.argv[1] == "true"
 
 # Init pygame and screen

@@ -241,12 +241,14 @@ while True:
         b.draw(screen)
 
     if screenMode == 0:
-        for idx, result in enumerate(rounds[-4::-1]):
+        for idx, result in enumerate(rounds[::-1]):
             text = myfont.render(result.car + ' - ' + str(result.time / 1000.0) + 's', 1, (10, 10, 10))
             textpos = text.get_rect()
             textpos.centerx = screen.get_rect().centerx
             textpos.top = idx * myfont.get_linesize() + 60
             screen.blit(text, textpos)
+            if idx > 4:
+                break
 
     pygame.display.update()
 

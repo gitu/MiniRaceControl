@@ -13,6 +13,8 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 
+SEND_TO_FIREBASE = true
+
 count=0
 echo "will now wait for google"
 until $(curl --output /dev/null --silent --head --fail https://www.google.ch); do
@@ -22,7 +24,7 @@ until $(curl --output /dev/null --silent --head --fail https://www.google.ch); d
         sudo lsof -i
         echo "https://www.google.ch"
         curl https://www.google.ch;
-        exit 1;
+        SEND_TO_FIREBASE = false
     fi;
     printf '.';
     sleep 1;
@@ -32,15 +34,21 @@ echo " [server responded after approx ${count}s]"
 set -e
 
 cd $DIR
-sudo -u pi git pull
+
+if [ "${SEND_TO_FIREBASE}" = true ]; then
+    sudo -u pi git pull
+
+    echo "##########################"
+    echo "sync"
+
+    sync
+else
+    echo "##########################"
+    echo " skipping update - offline"
+fi
 
 echo "##########################"
-echo "sync"
-
-sync
-
-echo "##########################"
-echo "start pirace"
+echo "start pirace send to fb: ${SEND_TO_FIREBASE}"
 
 sudo python PiRace.py
 

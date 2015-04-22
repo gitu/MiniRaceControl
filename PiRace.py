@@ -8,6 +8,7 @@ import os.path
 
 import pygame
 from pygame.locals import *
+import sys
 from PiControl import RaceTrack
 
 
@@ -179,6 +180,8 @@ uid = int(s) if s else os.getuid()
 s = os.getenv("SUDO_GID")
 gid = int(s) if s else os.getgid()
 
+send_to_fb = len(sys.argv) > 1 and sys.argv[1] == "true"
+
 # Init pygame and screen
 pygame.init()
 pygame.mouse.set_visible(False)
@@ -204,6 +207,12 @@ for s in buttons:  # For each screenful of buttons...
 
 print "loading background.."
 img = pygame.image.load("images/bg.png")
+
+print "connect to firebase"
+if send_to_fb:
+    print "would connect"
+else:
+    print "connecting to fb skipped.."
 
 print "Init Serial"
 rt = RaceTrack('/dev/ttyUSB0')

@@ -13,7 +13,7 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 
-SEND_TO_FIREBASE=true
+SEND_TO_FIREBASE=true;
 
 count=0
 echo "will now wait for google"
@@ -24,7 +24,8 @@ until $(curl --output /dev/null --silent --head --fail https://www.google.ch); d
         sudo lsof -i
         echo "https://www.google.ch"
         curl https://www.google.ch;
-        SEND_TO_FIREBASE=false
+        SEND_TO_FIREBASE=false;
+        break;
     fi;
     printf '.';
     sleep 1;

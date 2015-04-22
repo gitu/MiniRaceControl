@@ -1,10 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="BashSupportProjectSettings">
-    <option name="globalVariables">
-      <set>
-        <option value="SEND_TO_FIREBASE" />
-      </set>
-    </option>
-  </component>
-</project>
+<project version="4" />

@@ -43,6 +43,8 @@ cd $DIR
 if [ "${SEND_TO_FIREBASE}" = true ]; then
     sudo -u pi git pull
 
+    #sudo pip install plotly --upgrade
+
     echo "##########################"
     echo "sync"
 

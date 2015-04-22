@@ -16,6 +16,8 @@ from PiControl import RaceTrack
 
 
 
+
+
 # UI classes ---------------------------------------------------------------
 
 # Small resistive touchscreen is best suited to simple tap interactions.
@@ -26,6 +28,8 @@ from PiControl import RaceTrack
 # image (PNG loaded from icons directory) for each.
 # There isn't a globally-declared fixed list of Icons.  Instead, the list
 # is populated at runtime from the contents of the 'icons' directory.
+from PiPlot import StreamWriter
+import settings
 
 
 class Icon:
@@ -208,16 +212,27 @@ for s in buttons:  # For each screenful of buttons...
 print "loading background.."
 img = pygame.image.load("images/bg.png")
 
+
+print "Init Serial"
+rt = RaceTrack(settings.serial_port)
+
+rt.add_round_listener(catch_round_result)
+
+
 print "connect to firebase"
 if send_to_fb:
     print "would connect"
 else:
     print "connecting to fb skipped.."
 
-print "Init Serial"
-rt = RaceTrack('/dev/ttyUSB0')
+if send_to_fb:
+    sw = StreamWriter()
 
-rt.add_round_listener(catch_round_result)
+    def send_to_stream(new_round_info):
+        sw.write(new_round_info)
+
+    rt.add_round_listener(send_to_stream)
+
 # Main loop ----------------------------------------------------------------
 
 while True:

@@ -66,13 +66,13 @@ class RaceTrack(object):
         self.reset()
         self.last_state = 0
 
-    def process_round_data(self, time_result):
-        if self.cars.get(time_result.carNr):
-            round = {'time': time_result.time - self.cars[time_result.carNr].time, 'car': time_result.carNr}
-            self.rounds.append(round)
+    def process_round_data(self, new_time_result):
+        if self.cars.get(new_time_result.carNr):
+            new_round = {'time': new_time_result.time - self.cars[new_time_result.carNr].time, 'car': new_time_result.carNr}
+            self.rounds.append(new_round)
             for listener in self.round_listener:
-                listener(round)
-        self.cars[time_result.carNr] = time_result
+                listener(new_round)
+        self.cars[new_time_result.carNr] = new_time_result
 
     def reset(self):
         self.rounds = []

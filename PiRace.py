@@ -128,9 +128,9 @@ def settingCallback(n):  # Pass 1 (next setting) or -1 (prev setting)
         screenMode = 0
 
 
-def catch_round_result(round):
-    global new_round
-    rounds.append(rounds)
+def catch_round_result(new_round_info):
+    global rounds,new_round
+    rounds.append(new_round_info)
     new_round = 1
 
 

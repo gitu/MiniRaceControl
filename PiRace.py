@@ -214,7 +214,7 @@ while True:
     # Process touchscreen input
     while True:
         while rt.read_track(False):
-            pass
+            print(".")
         screen_change = 0
         for event in pygame.event.get():
             if (event.type is MOUSEBUTTONDOWN):

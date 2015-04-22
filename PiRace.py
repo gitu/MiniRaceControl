@@ -21,6 +21,7 @@ from pygame.locals import *
 # image (PNG loaded from icons directory) for each.
 # There isn't a globally-declared fixed list of Icons.  Instead, the list
 # is populated at runtime from the contents of the 'icons' directory.
+import thread
 from PiControl import RaceTrack
 
 
@@ -204,9 +205,10 @@ img = pygame.image.load("images/bg.png")
 print "Init Serial"
 rt = RaceTrack('/dev/ttyUSB0')
 
-
+rt.add_round_listener(catch_round_result)
 # Main loop ----------------------------------------------------------------
 
+thread.start_new_thread(rt.continues_reader)
 
 while (True):
     # Process touchscreen input

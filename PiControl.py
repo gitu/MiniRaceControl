@@ -113,24 +113,27 @@ class RaceTrack(object):
 
 
     def read_track(self, do_sleep = True):
-        state = self.read_state()
-        changed = False
-        if self.last_state == state:
-            if do_sleep:
-                time.sleep(0.01)
-        else:
-            changed = True
-            for listener in self.listeners:
-                listener(state)
-            if type(state) == TimeResult:
-                for listener in self.time_listeners:
+        try:
+            state = self.read_state()
+            changed = False
+            if self.last_state == state:
+                if do_sleep:
+                    time.sleep(0.01)
+            else:
+                changed = True
+                for listener in self.listeners:
                     listener(state)
-                self.process_round_data(state)
-            elif type(state) == TrackState:
-                for listener in self.track_state_listeners:
-                    listener(state)
-        self.last_state = state
-        return changed
+                if type(state) == TimeResult:
+                    for listener in self.time_listeners:
+                        listener(state)
+                    self.process_round_data(state)
+                elif type(state) == TrackState:
+                    for listener in self.track_state_listeners:
+                        listener(state)
+            self.last_state = state
+            return changed
+        except IndexError:
+            return False
 
     def continues_reader(self):
         while True:

@@ -115,8 +115,9 @@ class RaceTrack(object):
     def read_track(self, do_sleep = True):
         state = self.read_state()
         changed = False
-        if self.last_state == state and do_sleep:
-            time.sleep(0.01)
+        if self.last_state == state:
+            if do_sleep:
+                time.sleep(0.01)
         else:
             changed = True
             for listener in self.listeners:

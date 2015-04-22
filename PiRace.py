@@ -252,13 +252,16 @@ while True:
 
     if screenMode == 0:
         for idx, result in enumerate(rounds[::-1]):
-            text = myfont.render('car ' + str(result['car']) + ' - ' + "{:7.3f}".format(result['time'] / 1000.0) + 's', 1, (10, 10, 10))
-            textpos = text.get_rect()
-            textpos.centerx = screen.get_rect().centerx
-            textpos.top = idx * myfont.get_linesize() + 80
-            screen.blit(text, textpos)
-            if idx > 3:
-                break
+            try:
+                text = myfont.render('car ' + str(result['car']) + ' - ' + "{:7.3f}".format(result['time'] / 1000.0) + 's', 1, (10, 10, 10))
+                textpos = text.get_rect()
+                textpos.centerx = screen.get_rect().centerx
+                textpos.top = idx * myfont.get_linesize() + 80
+                screen.blit(text, textpos)
+                if idx > 3:
+                    break
+            except IndexError:
+                print("too long time")
 
     pygame.display.update()
 

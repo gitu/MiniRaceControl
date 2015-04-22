@@ -4,8 +4,11 @@
 import fnmatch
 import os
 import os.path
+
 import pygame
 from pygame.locals import *
+
+
 
 
 # UI classes ---------------------------------------------------------------
@@ -18,6 +21,8 @@ from pygame.locals import *
 # image (PNG loaded from icons directory) for each.
 # There isn't a globally-declared fixed list of Icons.  Instead, the list
 # is populated at runtime from the contents of the 'icons' directory.
+from PiControl import RaceTrack
+
 
 class Icon:
     def __init__(self, name):
@@ -120,6 +125,11 @@ def settingCallback(n):  # Pass 1 (next setting) or -1 (prev setting)
         screenMode = 0
 
 
+def catch_round_result(round):
+    rounds.append(rounds)
+    new_round = 1
+
+
 # Global stuff -------------------------------------------------------------
 
 screenMode = 0  # Current screen mode; default = viewfinder
@@ -130,6 +140,10 @@ loadIdx = -1  # Image index for loading
 scaled = None  # pygame Surface w/last-loaded image
 
 icons = []  # This list gets populated at startup
+rounds = []
+new_round = 0
+
+myfont = pygame.font.SysFont("monospace", 15)
 
 buttons = [
     [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
@@ -186,13 +200,14 @@ for s in buttons:  # For each screenful of buttons...
 print "loading background.."
 img = pygame.image.load("images/bg.png")
 
-print"Load Settings"
+print "Init Serial"
+rt = RaceTrack('/dev/ttyUSB0')
 
 
 # Main loop ----------------------------------------------------------------
 
-while (True):
 
+while (True):
     # Process touchscreen input
     while True:
         screen_change = 0
@@ -203,9 +218,11 @@ while (True):
                     if b.selected(pos): break
                 screen_change = 1
 
-
-        # if screenMode >= 1 or screenMode != screenModePrior: break
-        if screen_change == 1 or screenMode != screenModePrior: break
+        if new_round == 1:
+            new_round = 0
+            break
+        if screen_change == 1 or screenMode != screenModePrior:
+            break
 
     if img is None:  # clear background
         screen.fill(0)
@@ -217,6 +234,14 @@ while (True):
     # Overlay buttons on display and update
     for i, b in enumerate(buttons[screenMode]):
         b.draw(screen)
+
+    if screenMode == 0:
+        for idx, result in enumerate(rounds[-4::-1]):
+            text = myfont.render(result.car + ' - ' + str(result.time / 1000.0) + 's', 1, (10, 10, 10))
+            textpos = text.get_rect()
+            textpos.centerx = screen.get_rect().centerx
+            textpos.top = idx * myfont.get_linesize() + 60
+            screen.blit(text, textpos)
 
     pygame.display.update()
 

@@ -29,7 +29,11 @@ until $(curl --output /dev/null --silent --head --fail https://www.google.ch); d
     printf '.';
     sleep 1;
 done
-echo " [server responded after approx ${count}s]"
+if [ "${SEND_TO_FIREBASE}" = true ]; then
+    echo " [server responded after approx ${count}s]";
+else
+    echo " [server did not respond after approx ${count}s]";
+fi
 
 set -e
 

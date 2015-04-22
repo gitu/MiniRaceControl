@@ -64,6 +64,7 @@ class RaceTrack(object):
         self._readline()
         self.listeners = []
         self.reset()
+        self.last_state = 0
 
     def process_round_data(self, time_result):
         if self.cars.get(time_result.carNr):
@@ -111,24 +112,28 @@ class RaceTrack(object):
         self.round_listener.append(listener)
 
 
-    def continues_reader(self):
-        last_state = 0
-        while True:
-            state = self.read_state()
-            if last_state == state:
-                time.sleep(0.01)
-            else:
-                for listener in self.listeners:
+    def read_track(self, do_sleep = True):
+        state = self.read_state()
+        changed = False
+        if self.last_state == state and do_sleep:
+            time.sleep(0.01)
+        else:
+            changed = True
+            for listener in self.listeners:
+                listener(state)
+            if type(state) == TimeResult:
+                for listener in self.time_listeners:
                     listener(state)
-                if type(state) == TimeResult:
-                    for listener in self.time_listeners:
-                        listener(state)
-                    self.process_round_data(state)
-                elif type(state) == TrackState:
-                    for listener in self.track_state_listeners:
-                        listener(state)
+                self.process_round_data(state)
+            elif type(state) == TrackState:
+                for listener in self.track_state_listeners:
+                    listener(state)
+        self.last_state = state
+        return changed
 
-            last_state = state
+    def continues_reader(self):
+        while True:
+            self.read_track()
 
 
 if __name__ == "__main__":

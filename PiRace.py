@@ -3,10 +3,14 @@
 
 import fnmatch
 import os
+
 import os.path
+from threading import Thread
 
 import pygame
 from pygame.locals import *
+from PiControl import RaceTrack
+
 
 
 
@@ -21,9 +25,6 @@ from pygame.locals import *
 # image (PNG loaded from icons directory) for each.
 # There isn't a globally-declared fixed list of Icons.  Instead, the list
 # is populated at runtime from the contents of the 'icons' directory.
-import thread
-from threading import Thread
-from PiControl import RaceTrack
 
 
 class Icon:
@@ -209,12 +210,10 @@ rt = RaceTrack('/dev/ttyUSB0')
 rt.add_round_listener(catch_round_result)
 # Main loop ----------------------------------------------------------------
 
-thread = Thread(target = rt.continues_reader)
-thread.start()
-
 while (True):
     # Process touchscreen input
     while True:
+        rt.read_state()
         screen_change = 0
         for event in pygame.event.get():
             if (event.type is MOUSEBUTTONDOWN):

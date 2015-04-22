@@ -210,10 +210,11 @@ rt = RaceTrack('/dev/ttyUSB0')
 rt.add_round_listener(catch_round_result)
 # Main loop ----------------------------------------------------------------
 
-while (True):
+while True:
     # Process touchscreen input
     while True:
-        rt.read_state()
+        while rt.read_track(False):
+            pass
         screen_change = 0
         for event in pygame.event.get():
             if (event.type is MOUSEBUTTONDOWN):

@@ -3,13 +3,13 @@
 
 import fnmatch
 import os
-
 import os.path
+import sys
 
 import pygame
 from pygame.locals import *
-import sys
 from PiControl import RaceTrack
+
 
 
 
@@ -79,13 +79,13 @@ class Button:
             elif key == 'value':
                 self.value = value
 
-    def selected(self, pos):
+    def selected(self, position):
         x1 = self.rect[0]
         y1 = self.rect[1]
         x2 = x1 + self.rect[2] - 1
         y2 = y1 + self.rect[3] - 1
-        if ((pos[0] >= x1) and (pos[0] <= x2) and
-                (pos[1] >= y1) and (pos[1] <= y2)):
+        if ((position[0] >= x1) and (position[0] <= x2) and
+                (position[1] >= y1) and (position[1] <= y2)):
             if self.callback:
                 if self.value is None:
                     self.callback()
@@ -94,25 +94,25 @@ class Button:
             return True
         return False
 
-    def draw(self, screen):
+    def draw(self, target_screen):
         if self.color:
-            screen.fill(self.color, self.rect)
+            target_screen.fill(self.color, self.rect)
         if self.iconBg:
-            screen.blit(self.iconBg.bitmap,
-                        (self.rect[0] + (self.rect[2] - self.iconBg.bitmap.get_width()) / 2,
-                         self.rect[1] + (self.rect[3] - self.iconBg.bitmap.get_height()) / 2))
+            target_screen.blit(self.iconBg.bitmap,
+                               (self.rect[0] + (self.rect[2] - self.iconBg.bitmap.get_width()) / 2,
+                                self.rect[1] + (self.rect[3] - self.iconBg.bitmap.get_height()) / 2))
         if self.iconFg:
-            screen.blit(self.iconFg.bitmap,
-                        (self.rect[0] + (self.rect[2] - self.iconFg.bitmap.get_width()) / 2,
-                         self.rect[1] + (self.rect[3] - self.iconFg.bitmap.get_height()) / 2))
+            target_screen.blit(self.iconFg.bitmap,
+                               (self.rect[0] + (self.rect[2] - self.iconFg.bitmap.get_width()) / 2,
+                                self.rect[1] + (self.rect[3] - self.iconFg.bitmap.get_height()) / 2))
 
-    def setBg(self, name):
+    def set_bg(self, name):
         if name is None:
             self.iconBg = None
         else:
-            for i in icons:
-                if name == i.name:
-                    self.iconBg = i
+            for icon in icons:
+                if name == icon.name:
+                    self.iconBg = icon
                     break
 
 
@@ -120,11 +120,11 @@ class Button:
 # These are defined before globals because they're referenced by items in
 # the global buttons[] list.
 
-def quitCallback():  # Quit confirmation button
+def quit_callback():  # Quit confirmation button
     raise SystemExit
 
 
-def settingCallback(n):  # Pass 1 (next setting) or -1 (prev setting)
+def setting_callback(n):  # Pass 1 (next setting) or -1 (prev setting)
     global screenMode
     screenMode += n
     if screenMode < 0:
@@ -134,7 +134,7 @@ def settingCallback(n):  # Pass 1 (next setting) or -1 (prev setting)
 
 
 def catch_round_result(new_round_info):
-    global rounds,new_round
+    global rounds, new_round
     rounds.append(new_round_info)
     new_round = 1
 
@@ -156,15 +156,15 @@ pygame.font.init()
 myfont = pygame.font.SysFont("monospace", 36)
 
 buttons = [
-    [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
-     Button((400, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+    [Button((0, 0, 80, 52), bg='prev', cb=setting_callback, value=-1),
+     Button((400, 0, 80, 52), bg='next', cb=setting_callback, value=1),
      Button((0, 10, 480, 35), bg='stats')],
-    [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
-     Button((400, 0, 80, 52), bg='next', cb=settingCallback, value=1),
+    [Button((0, 0, 80, 52), bg='prev', cb=setting_callback, value=-1),
+     Button((400, 0, 80, 52), bg='next', cb=setting_callback, value=1),
      Button((0, 10, 480, 35), bg='console')],
-    [Button((0, 0, 80, 52), bg='prev', cb=settingCallback, value=-1),
-     Button((400, 0, 80, 52), bg='next', cb=settingCallback, value=1),
-     Button((190, 80, 100, 120), bg='quit-ok', cb=quitCallback),
+    [Button((0, 0, 80, 52), bg='prev', cb=setting_callback, value=-1),
+     Button((400, 0, 80, 52), bg='next', cb=setting_callback, value=1),
+     Button((190, 80, 100, 120), bg='quit-ok', cb=quit_callback),
      Button((0, 10, 480, 35), bg='quit')]
 ]
 
@@ -195,12 +195,12 @@ screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 print "Loading Icons..."
 # Load all icons at startup.
-for file in os.listdir(iconPath):
-    if fnmatch.fnmatch(file, '*.png'):
-        icons.append(Icon(file.split('.')[0]))
+for icon_file in os.listdir(iconPath):
+    if fnmatch.fnmatch(icon_file, '*.png'):
+        icons.append(Icon(icon_file.split('.')[0]))
 
 # Assign Icons to Buttons, now that they're loaded
-print"Assigning Buttons"
+print "Assigning Buttons"
 for s in buttons:  # For each screenful of buttons...
     for b in s:  # For each button on screen...
         for i in icons:  # For each icon...
@@ -227,13 +227,35 @@ if send_to_fb:
 else:
     print "connecting to fb skipped.."
 
-if send_to_fb:
+
+def reset_stream_writer():
     sw = StreamWriter()
 
     def send_to_stream(new_round_info):
         sw.write(new_round_info)
 
     rt.add_round_listener(send_to_stream)
+
+
+def reset_firebase_writer():
+    pass
+
+def setup_race():
+    global rounds
+    rounds = []
+    if send_to_fb:
+        reset_stream_writer()
+        reset_firebase_writer()
+
+def track_state(track_state):
+    if track_state.startLamp == 1:
+        setup_race()
+
+
+setup_race()
+
+rt.add_track_state_listener(track_state)
+
 
 # Main loop ----------------------------------------------------------------
 
@@ -244,10 +266,11 @@ while True:
             pass
         screen_change = 0
         for event in pygame.event.get():
-            if (event.type is MOUSEBUTTONDOWN):
+            if event.type is MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 for b in buttons[screenMode]:
-                    if b.selected(pos): break
+                    if b.selected(pos):
+                        break
                 screen_change = 1
 
         if new_round == 1:
@@ -271,16 +294,13 @@ while True:
         for idx, result in enumerate(rounds[::-1]):
             try:
                 text = myfont.render('car ' + str(result['car']) + ' - ' + "{:7.3f}".format(result['time'] / 1000.0) + 's', 1, (10, 10, 10))
-                textpos = text.get_rect()
-                textpos.centerx = screen.get_rect().centerx
-                textpos.top = idx * myfont.get_linesize() + 80
-                screen.blit(text, textpos)
+                text_pos = text.get_rect()
+                text_pos.centerx = screen.get_rect().centerx
+                text_pos.top = idx * myfont.get_linesize() + 80
+                screen.blit(text, text_pos)
                 if idx > 3:
                     break
             except IndexError:
                 print("too long time")
 
     pygame.display.update()
-
-
-

@@ -1,10 +1,11 @@
+import random
 import threading
 import datetime
-import plotly
+import time
+
 import plotly.plotly as py
 import plotly.tools as tls
 from plotly.graph_objs import *
-import time
 
 import settings
 
@@ -16,54 +17,133 @@ class StreamHeartBeat(threading.Thread):
 
     def run(self):
         while True:
-            time.sleep(59)
+            time.sleep(50)
+            print('send heartbeat')
             self.stream.heartbeat()
 
 
 class StreamWriter(object):
-
     def __init__(self):
-        py.sign_in(settings.plotly_login, settings.plotly_api_key)
+        py.sign_in(settings.plotly_login, settings.plotly_api_key, stream_ids=settings.plotly_stream_ids)
         self.stream_count = 0
         self.streams = {}
         self.heartbeats = {}
+        traces = []
+
+        self.c = 0
+
+        for x in range(4):
+            traces.append(
+                Scatter(
+                    x=[],
+                    y=[],
+                    name='Car ' + str(x+1),
+                    stream=dict(token=settings.plotly_stream_ids[x], maxpoints=40),
+                    line=Line(
+                        shape='spline'
+                    )
+                )
+            )
+
+        layout = Layout(
+            title='Confinale Race View',
+            autosize = True,
+            xaxis=XAxis(
+                title='Time',
+                showgrid=False,
+                zeroline=False
+            ),
+                yaxis=YAxis(
+                title='seconds',
+                showline=False,
+                type='log',
+                autorange=True
+            ),
+            showlegend=True,
+            legend=Legend(
+                x=0,
+                y=1,
+                traceorder='normal',
+                font=Font(
+                    family='sans-serif',
+                    size=12,
+                    color='#000'
+                ),
+                bgcolor='#E2E2E2',
+                bordercolor='#FFFFFF',
+                borderwidth=2
+            )
+        )
+
+        data = Data(traces)
+        fig = Figure(data=data, layout=layout)
+        self.url = py.plot(fig, filename='Confinale Race View', fileopt='overwrite', auto_open=True)
+        print(self.url)
 
     def get_stream(self, car):
-        if self.streams.has_key(car):
-            return self.streams.get(car)
-        else:
-            stream = py.Stream(settings.plotly_stream_id[car-1])
+        if not self.streams.has_key(car):
+            stream = py.Stream(settings.plotly_stream_ids[car - 1])
+            print('new stream for id: ' + settings.plotly_stream_ids[car - 1])
             stream.open()
+            print('opened stream')
             heartbeat = StreamHeartBeat(stream)
             heartbeat.setDaemon(True)
             heartbeat.start()
             self.streams[car] = stream
             self.heartbeats[car] = heartbeat
-            return stream
+
+        return self.streams.get(car)
 
     def write(self, round_data):
-        scatter = Scatter(x=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), y=round_data['time'])
-        print(scatter)
-        return self.get_stream(round_data['car']).write(scatter)
+        if round_data['time'] < 40000:
+            x = round_data['timestamp']
+            y = round_data['time']/1000.0
+            stream = self.get_stream(round_data['car'])
+            stream.write({'x': x, 'y': y})
+            stream.close()
 
 
+class RandomGen(threading.Thread):
+    def __init__(self, streamwriter, car):
+        super(RandomGen, self).__init__()
+        self.car = car
+        self.streamwriter = streamwriter
+
+    def run(self):
+        n = 0
+        t = random.randint(1500, 15000)
+        while n < 100:
+            f1 = 0.1 if t<1500 else 0.3
+            f2 = 0.1 if t>15000 else 0.2
+            t += random.randint(-int(f1*t), abs(int(f2*t)))
+            time.sleep(t / 1000.0)
+            self.streamwriter.write({'car': self.car, 'time': t, 'timestamp': datetime.datetime.now()})
+            print(str(n) + ' - ' + str({'car': self.car, 'time': t, 'timestamp': datetime.datetime.now()}))
+            n += 1
 
 
 if __name__ == "__main__":
     sw = StreamWriter()
-    sw.write({'car':1,'time':3002})
-    time.sleep(1)
-    sw.write({'car':2,'time':323})
-    sw.write({'car':3,'time':323})
-    sw.write({'car':4,'time':323})
-    time.sleep(1)
-    sw.write({'car':1,'time':1022})
-    time.sleep(1)
-    sw.write({'car':2,'time':1223})
-    time.sleep(1)
-    sw.write({'car':1,'time':1022})
-    time.sleep(1)
-    sw.write({'car':2,'time':1223})
+
+    time.sleep(10)
+    rg1 = RandomGen(sw, 1)
+    rg1.start()
+    time.sleep(5)
+    rg2 = RandomGen(sw, 2)
+    rg2.start()
+    rg3 = RandomGen(sw, 3)
+    rg3.start()
+    rg4 = RandomGen(sw, 4)
+    rg4.start()
+    print("started all threads")
+
+    rg1.join()
+    rg2.join()
+    rg3.join()
+    rg4.join()
+    print("joined threads")
+
+
 
 
 

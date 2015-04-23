@@ -68,7 +68,7 @@ class RaceTrack(object):
 
     def process_round_data(self, new_time_result):
         if self.cars.get(new_time_result.carNr):
-            new_round = {'time': new_time_result.time - self.cars[new_time_result.carNr].time, 'car': new_time_result.carNr}
+            new_round = {'timestamp': new_time_result.createTime, 'time': new_time_result.time - self.cars[new_time_result.carNr].time, 'car': new_time_result.carNr}
             self.rounds.append(new_round)
             for listener in self.round_listener:
                 listener(new_round)

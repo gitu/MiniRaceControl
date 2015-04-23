@@ -23,7 +23,7 @@ class StreamHeartBeat(threading.Thread):
 
 
 class StreamWriter(object):
-    def __init__(self):
+    def __init__(self, auto_start=False):
         py.sign_in(settings.plotly_login, settings.plotly_api_key, stream_ids=settings.plotly_stream_ids)
         self.stream_count = 0
         self.streams = {}
@@ -77,7 +77,7 @@ class StreamWriter(object):
 
         data = Data(traces)
         fig = Figure(data=data, layout=layout)
-        self.url = py.plot(fig, filename='Confinale Race View', fileopt='overwrite', auto_open=True)
+        self.url = py.plot(fig, filename='Confinale Race View', fileopt='overwrite', auto_open=auto_start)
         print(self.url)
 
     def get_stream(self, car):
@@ -123,7 +123,7 @@ class RandomGen(threading.Thread):
 
 
 if __name__ == "__main__":
-    sw = StreamWriter()
+    sw = StreamWriter(True)
 
     time.sleep(10)
     rg1 = RandomGen(sw, 1)

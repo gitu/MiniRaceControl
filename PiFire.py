@@ -1,25 +1,43 @@
+import json
 import random
 import threading
 import datetime
-import firebase
-from multiprocessing import freeze_support
 import time
+
+from firebase_token_generator import create_token
+import requests
 
 import settings
 
 
-freeze_support()
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        elif isinstance(obj, datetime.date):
+            return obj.isoformat()
+        elif isinstance(obj, datetime.timedelta):
+            return (datetime.datetime.min + obj).time().isoformat()
+        else:
+            return super(DateTimeEncoder, self).default(obj)
+
 
 def cb(input):
     print(input)
 
+
 class PiFire(object):
-    def  __init__(self):
-        self.fb = firebase.FirebaseApplication(settings.firebase_url, authentication=firebase.FirebaseAuthentication(settings.firebase_secret, settings.firebase_email))
+    @staticmethod
+    def reset():
+        url = 'https://{0}.firebaseio.com/rounds.json?auth={1}'.format(settings.firebase_name, settings.firebase_secret)
+        r = requests.put(url, DateTimeEncoder().encode([]))
+        print(r)
 
-    def write(self, round_data):
-        self.fb.post(url='/rounds/', data=round_data, params={'print': 'pretty'})
-
+    @staticmethod
+    def write(round_data):
+        url = 'https://{0}.firebaseio.com/rounds.json?auth={1}'.format(settings.firebase_name, settings.firebase_secret)
+        r = requests.post(url, DateTimeEncoder().encode(round_data))
+        print(r)
 
 
 class RandomGen(threading.Thread):
@@ -32,9 +50,9 @@ class RandomGen(threading.Thread):
         n = 0
         t = random.randint(1500, 15000)
         while n < 100:
-            f1 = 0.1 if t<1500 else 0.3
-            f2 = 0.1 if t>15000 else 0.2
-            t += random.randint(-int(f1*t), abs(int(f2*t)))
+            f1 = 0.1 if t < 1500 else 0.3
+            f2 = 0.1 if t > 15000 else 0.2
+            t += random.randint(-int(f1 * t), abs(int(f2 * t)))
             time.sleep(t / 1000.0)
             self.pifire.write({'car': self.car, 'time': t, 'timestamp': datetime.datetime.now()})
             print(str(n) + ' - ' + str({'car': self.car, 'time': t, 'timestamp': datetime.datetime.now()}))
@@ -42,9 +60,11 @@ class RandomGen(threading.Thread):
 
 
 if __name__ == "__main__":
-    freeze_support()
-
     sw = PiFire()
+
+    sw.reset()
+
+    time.sleep(5)
 
     rg1 = RandomGen(sw, 1)
     rg1.start()
@@ -61,3 +81,4 @@ if __name__ == "__main__":
     rg3.join()
     rg4.join()
     print("joined threads")
+

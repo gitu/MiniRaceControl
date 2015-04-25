@@ -23,37 +23,37 @@ class StreamHeartBeat(threading.Thread):
 
 
 class StreamWriter(object):
+
     def __init__(self, auto_start=False):
         py.sign_in(settings.plotly_login, settings.plotly_api_key, stream_ids=settings.plotly_stream_ids)
         self.stream_count = 0
         self.streams = {}
         self.heartbeats = {}
+        self.reset_sw(auto_start)
+
+    def reset_sw(self, auto_start=False):
         traces = []
-
-        self.c = 0
-
         for x in range(4):
             traces.append(
                 Scatter(
                     x=[],
                     y=[],
-                    name='Car ' + str(x+1),
+                    name='Car ' + str(x + 1),
                     stream=dict(token=settings.plotly_stream_ids[x], maxpoints=40),
                     line=Line(
                         shape='spline'
                     )
                 )
             )
-
         layout = Layout(
             title='Confinale Race View',
-            autosize = True,
+            autosize=True,
             xaxis=XAxis(
                 title='Time',
                 showgrid=False,
                 zeroline=False
             ),
-                yaxis=YAxis(
+            yaxis=YAxis(
                 title='seconds',
                 showline=False,
                 type='log',
@@ -74,11 +74,9 @@ class StreamWriter(object):
                 borderwidth=2
             )
         )
-
         data = Data(traces)
         fig = Figure(data=data, layout=layout)
         self.url = py.plot(fig, filename='Confinale Race View', fileopt='overwrite', auto_open=auto_start)
-        print(self.url)
 
     def get_stream(self, car):
         if not self.streams.has_key(car):

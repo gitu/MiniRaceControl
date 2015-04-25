@@ -9,6 +9,7 @@ import sys
 import pygame
 from pygame.locals import *
 from PiControl import RaceTrack
+from PiFire import PiFire
 
 
 
@@ -28,6 +29,7 @@ from PiControl import RaceTrack
 # image (PNG loaded from icons directory) for each.
 # There isn't a globally-declared fixed list of Icons.  Instead, the list
 # is populated at runtime from the contents of the 'icons' directory.
+import PiFire
 from PiPlot import StreamWriter
 import settings
 
@@ -221,24 +223,24 @@ rt = RaceTrack(settings.serial_port)
 rt.add_round_listener(catch_round_result)
 
 
-print "connect to firebase"
+print "connect to online services"
 if send_to_fb:
-    print "would connect"
+    sw = StreamWriter()
+
+    def send_to_streams(new_round_info):
+        sw.write(new_round_info)
+        PiFire.PiFire.write(new_round_info)
+
+    rt.add_round_listener(send_to_streams)
 else:
     print "connecting to fb skipped.."
 
 
 def reset_stream_writer():
-    sw = StreamWriter()
-
-    def send_to_stream(new_round_info):
-        sw.write(new_round_info)
-
-    rt.add_round_listener(send_to_stream)
-
+    sw.reset_sw()
 
 def reset_firebase_writer():
-    pass
+    PiFire.PiFire.reset()
 
 def setup_race():
     global rounds

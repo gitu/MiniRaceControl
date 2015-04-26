@@ -326,20 +326,15 @@ while True:
                 print("too long time")
 
     if screenMode == 1:
-        for idx, result in enumerate(cars):
+        idx = 0
+        for key, car in cars:
             try:
-                pprint(result)
-                print("################################")
-                print("################################")
-                print("################################")
-                print(result)
-                print(result['rounds'])
-                print(result['fastest'])
-                text = myfont.render('car ' + str(result['car']) + ' - ' + str(result['rounds']) + '  -  ' + "{:7.3f}".format(result['fastest'] / 1000.0) + 's', 1, (10, 10, 10))
+                text = myfont.render('car ' + str(car['car']) + ' - ' + str(car['rounds']) + ' - ' + "{:7.3f}".format(car['fastest'] / 1000.0) + 's', 1, (10, 10, 10))
                 text_pos = text.get_rect()
                 text_pos.centerx = screen.get_rect().centerx
                 text_pos.top = idx * myfont.get_linesize() + 80
                 screen.blit(text, text_pos)
+                idx += 1
                 if idx > 3:
                     break
             except IndexError:

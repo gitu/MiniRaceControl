@@ -228,8 +228,8 @@ if send_to_fb:
     sw = StreamWriter()
 
     def send_to_streams(new_round_info):
+        PiFire.PiFire.write_async(new_round_info)
         sw.write(new_round_info)
-        PiFire.PiFire.write(new_round_info)
 
     rt.add_round_listener(send_to_streams)
 else:

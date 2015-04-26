@@ -7,7 +7,7 @@ import time
 import requests
 
 import settings
-
+from grequests import async
 
 class DateTimeEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -37,6 +37,11 @@ class PiFire(object):
         url = 'https://{0}.firebaseio.com/rounds.json?auth={1}'.format(settings.firebase_name, settings.firebase_secret)
         r = requests.post(url, DateTimeEncoder().encode(round_data))
         print(r)
+
+    @staticmethod
+    def write_async(round_data):
+        url = 'https://{0}.firebaseio.com/rounds.json?auth={1}'.format(settings.firebase_name, settings.firebase_secret)
+        r = async.post(url, DateTimeEncoder().encode(round_data))
 
 
 class RandomGen(threading.Thread):

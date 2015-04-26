@@ -104,6 +104,9 @@ class StreamWriter(object):
             except:
                 print("exception while writing to stream...")
 
+    def write_async(self, new_round_info):
+        pass
+
 
 class RandomGen(threading.Thread):
     def __init__(self, streamwriter, car):

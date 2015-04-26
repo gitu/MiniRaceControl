@@ -10,6 +10,10 @@ from plotly.graph_objs import *
 import settings
 
 
+import urllib3
+urllib3.disable_warnings()
+
+
 class StreamHeartBeat(threading.Thread):
     def __init__(self, stream):
         super(StreamHeartBeat, self).__init__()

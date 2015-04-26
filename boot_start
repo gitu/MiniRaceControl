@@ -60,7 +60,7 @@ today=`date +%Y-%m-%d`
 
 mkdir logs
 
-sudo python PiRace.py ${SEND_TO_FIREBASE} | tee logs/log-${today}.txt
+sudo python PiRace.py ${SEND_TO_FIREBASE} | tee -a logs/log-${today}.txt
 
 
 echo "##########################"

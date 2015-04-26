@@ -41,7 +41,7 @@ class PiFire(object):
     @staticmethod
     def write_async(round_data):
         url = 'https://{0}.firebaseio.com/rounds.json?auth={1}'.format(settings.firebase_name, settings.firebase_secret)
-        r = grequests.post(url, DateTimeEncoder().encode(round_data))
+        r = grequests.post(url, data=DateTimeEncoder().encode(round_data))
 
 
 class RandomGen(threading.Thread):

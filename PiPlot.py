@@ -97,8 +97,12 @@ class StreamWriter(object):
             x = round_data['timestamp']
             y = round_data['time']/1000.0
             stream = self.get_stream(round_data['car'])
-            stream.write({'x': x, 'y': y})
-            stream.close()
+            try:
+                stream.open()
+                stream.write({'x': x, 'y': y})
+                stream.close()
+            except:
+                print("exception while writing to stream...")
 
 
 class RandomGen(threading.Thread):

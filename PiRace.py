@@ -141,12 +141,15 @@ def setting_callback(n):  # Pass 1 (next setting) or -1 (prev setting)
 def catch_round_result(nri):
     global rounds, new_round, cars
     rounds.append(nri)
-    if not cars.get(nri['car']):
-        cars[nri['car']] = {'car': nri['car'], 'fastest': nri['time'], 'rounds': 1}
+    car_id = nri['car']
+
+    if not cars.get(car_id):
+        cars[car_id] = {'car': car_id, 'fastest': nri['time'], 'rounds': 1}
     else:
-        cars[nri['car']]['rounds'] += 1
-        if cars[nri['car']]['fastest'] > nri['time']:
-            cars[nri['car']]['fastest'] = nri['time']
+        car = cars.get(car_id)
+        car['rounds'] += 1
+        if car['fastest'] > nri['time']:
+            car['fastest'] = nri['time']
     new_round = 1
 
 

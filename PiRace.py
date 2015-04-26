@@ -11,6 +11,8 @@ import pygame
 from pygame.locals import *
 from PiControl import RaceTrack
 from PiFire import PiFire
+from timeit import default_timer as timer
+
 
 
 
@@ -237,8 +239,13 @@ if send_to_fb:
     sw = StreamWriter()
 
     def send_to_streams(new_round_info):
+        start = timer()
+        print("new round info: ", new_round_info)
         PiFire.PiFire.write_async(new_round_info)
         sw.write(new_round_info)
+        end = timer()
+        print('took us: ', end - start)
+
 
     rt.add_round_listener(send_to_streams)
 else:
@@ -253,6 +260,9 @@ def reset_firebase_writer():
 
 def setup_race():
     global rounds, cars
+    print("##########################")
+    print("## START NEW RACE       ##")
+    print("##########################")
     rounds = []
     cars = {}
     if send_to_fb:

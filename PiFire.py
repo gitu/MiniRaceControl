@@ -4,7 +4,6 @@ import threading
 import datetime
 import time
 
-from firebase_token_generator import create_token
 import requests
 
 import settings

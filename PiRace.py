@@ -330,6 +330,8 @@ while True:
 
     if screenMode == 1:
         idx = 0
+
+        pprint(cars)
         for key, car in cars:
             try:
                 text = myfont.render('car ' + str(car['car']) + ' - ' + str(car['rounds']) + ' - ' + "{:7.3f}".format(car['fastest'] / 1000.0) + 's', 1, (10, 10, 10))

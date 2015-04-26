@@ -329,7 +329,10 @@ while True:
         for idx, result in enumerate(cars):
             try:
                 pprint(result)
-                print(result['car'])
+                print("################################")
+                print("################################")
+                print("################################")
+                print(result)
                 print(result['rounds'])
                 print(result['fastest'])
                 text = myfont.render('car ' + str(result['car']) + ' - ' + str(result['rounds']) + '  -  ' + "{:7.3f}".format(result['fastest'] / 1000.0) + 's', 1, (10, 10, 10))

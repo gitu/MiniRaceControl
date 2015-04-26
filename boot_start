@@ -56,8 +56,9 @@ fi
 
 echo "##########################"
 echo "start pirace send to fb: ${SEND_TO_FIREBASE}"
+today=`date +%Y-%m-%d`
 
-sudo python PiRace.py ${SEND_TO_FIREBASE}
+sudo python PiRace.py ${SEND_TO_FIREBASE} | tee log/log-${today}.txt
 
 
 echo "##########################"

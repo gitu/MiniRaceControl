@@ -135,10 +135,17 @@ def setting_callback(n):  # Pass 1 (next setting) or -1 (prev setting)
         screenMode = 0
 
 
-def catch_round_result(new_round_info):
-    global rounds, new_round
-    rounds.append(new_round_info)
+def catch_round_result(nri):
+    global rounds, new_round, cars
+    rounds.append(nri)
+    if not cars.get(nri['car']):
+        cars[nri['car']] = {'car': nri['car'], 'fastest': nri['time'], 'rounds': 1}
+    else:
+        cars[nri['car']]['rounds'] += 1
+        if cars[nri['car']]['fastest'] > nri['time']:
+            cars[nri['car']]['fastest'] = nri['time']
     new_round = 1
+
 
 
 # Global stuff -------------------------------------------------------------
@@ -153,6 +160,7 @@ scaled = None  # pygame Surface w/last-loaded image
 icons = []  # This list gets populated at startup
 rounds = []
 new_round = 0
+cars = {}
 
 pygame.font.init()
 myfont = pygame.font.SysFont("monospace", 36)
@@ -243,8 +251,9 @@ def reset_firebase_writer():
     PiFire.PiFire.reset()
 
 def setup_race():
-    global rounds
+    global rounds, cars
     rounds = []
+    cars = {}
     if send_to_fb:
         reset_stream_writer()
         reset_firebase_writer()
@@ -304,5 +313,19 @@ while True:
                     break
             except IndexError:
                 print("too long time")
+
+    if screenMode == 1:
+        for idx, result in enumerate(cars):
+            try:
+                text = myfont.render('car ' + str(result['car']) + ' - ' + "{:2}".format(result['rounds']) + '  -  ' + "{:7.3f}".format(result['fastest'] / 1000.0) + 's', 1, (10, 10, 10))
+                text_pos = text.get_rect()
+                text_pos.centerx = screen.get_rect().centerx
+                text_pos.top = idx * myfont.get_linesize() + 80
+                screen.blit(text, text_pos)
+                if idx > 3:
+                    break
+            except IndexError:
+                print("too long time")
+
 
     pygame.display.update()

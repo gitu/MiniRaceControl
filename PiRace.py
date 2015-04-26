@@ -4,6 +4,7 @@
 import fnmatch
 import os
 import os.path
+from pprint import pprint
 import sys
 
 import pygame
@@ -317,6 +318,7 @@ while True:
     if screenMode == 1:
         for idx, result in enumerate(cars):
             try:
+                pprint(result)
                 text = myfont.render('car ' + str(result['car']) + ' - ' + "{:2}".format(result['rounds']) + '  -  ' + "{:7.3f}".format(result['fastest'] / 1000.0) + 's', 1, (10, 10, 10))
                 text_pos = text.get_rect()
                 text_pos.centerx = screen.get_rect().centerx

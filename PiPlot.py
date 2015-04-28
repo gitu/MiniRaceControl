@@ -1,3 +1,4 @@
+from Queue import Queue
 import random
 import threading
 import datetime
@@ -36,6 +37,9 @@ class StreamWriter(object):
         self.streams = {}
         self.heartbeats = {}
         self.reset_sw(auto_start)
+        self.async_queue = Queue()
+        self.async_worker = threading.Thread(target=self._process_async)
+        self.async_worker.daemon = True
 
     def reset_sw(self, auto_start=False):
         traces = []
@@ -114,6 +118,19 @@ class StreamWriter(object):
                     stream.close()
                 except:
                     print('exception while writing to stream...')
+
+    def start_async(self):
+        if not self.async_worker.is_alive:
+            self.async_worker.start()
+
+    def _process_async(self):
+        item = self.async_queue.get()
+        self.write(item)
+        self.async_queue.task_done()
+
+    def write_async(self, round_data):
+        self.start_async()
+        self.async_queue.put(round_data)
 
 
 class RandomGen(threading.Thread):

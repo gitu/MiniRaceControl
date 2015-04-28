@@ -15,13 +15,6 @@ from timeit import default_timer as timer
 
 
 
-
-
-
-
-
-
-
 # UI classes ---------------------------------------------------------------
 
 # Small resistive touchscreen is best suited to simple tap interactions.
@@ -245,7 +238,7 @@ if send_to_fb:
         start = timer()
         print("new round info: ", new_round_info)
         PiFire.PiFire.write_async(new_round_info)
-        sw.write(new_round_info)
+        sw.write_async(new_round_info)
         end = timer()
         print('took us: ', end - start)
 

@@ -1,3 +1,4 @@
+import threading
 import ConnectFirebase
 from ConnectPlotly import StreamWriter
 import settings
@@ -18,7 +19,16 @@ class RaceManager(object):
         if export_data:
             self.sw = StreamWriter()
 
+        self.worker = threading.Thread(target=self._readerc)
+        self.worker.daemon = True
+        self.worker.start()
+
+    def _reader(self):
+        while True:
+            self._rt.read_track(True)
+
     def catch_round_result(self, nri):
+        print('new round ', nri)
         self.rounds.append(nri)
         car_id = nri['car']
 
@@ -31,8 +41,8 @@ class RaceManager(object):
                 car['fastest'] = nri['time']
 
         if  self._export_data:
-            ConnectFirebase.PiFire.write_async(nri)
-            self.sw.write_async(nri)
+            ConnectFirebase.PiFire.write(nri)
+            self.sw.write(nri)
 
         self.race_state_counter += 1
 

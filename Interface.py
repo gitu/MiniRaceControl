@@ -4,14 +4,10 @@
 import fnmatch
 import os
 import os.path
-from pprint import pprint
 import sys
 
 import pygame
 from pygame.locals import *
-from PiControl import RaceTrack
-from PiFire import PiFire
-from timeit import default_timer as timer
 
 
 
@@ -25,8 +21,9 @@ from timeit import default_timer as timer
 # image (PNG loaded from icons directory) for each.
 # There isn't a globally-declared fixed list of Icons.  Instead, the list
 # is populated at runtime from the contents of the 'icons' directory.
-import PiFire
-from PiPlot import StreamWriter
+import ConnectFirebase
+from ConnectPlotly import StreamWriter
+from RaceManager import RaceManager
 import settings
 
 
@@ -131,35 +128,17 @@ def setting_callback(n):  # Pass 1 (next setting) or -1 (prev setting)
         screenMode = 0
 
 
-def catch_round_result(nri):
-    global rounds, new_round, cars
-    rounds.append(nri)
-    car_id = nri['car']
-
-    if not cars.get(car_id):
-        cars[car_id] = {'car': car_id, 'fastest': nri['time'], 'rounds': 1}
-    else:
-        car = cars.get(car_id)
-        car['rounds'] += 1
-        if car['fastest'] > nri['time']:
-            car['fastest'] = nri['time']
-    new_round = 1
-
-
-
 # Global stuff -------------------------------------------------------------
 
 screenMode = 0  # Current screen mode; default = viewfinder
 screenModePrior = -1  # Prior screen mode (for detecting changes)
+race_state_counter_prior = -1  # Prior race state id mode (for detecting changes)
 iconPath = 'icons'  # Subdirectory containing UI bitmaps (PNG format)
 saveIdx = -1  # Image index for saving (-1 = none set yet)
 loadIdx = -1  # Image index for loading
 scaled = None  # pygame Surface w/last-loaded image
 
 icons = []  # This list gets populated at startup
-rounds = []
-new_round = 0
-cars = {}
 
 pygame.font.init()
 myfont = pygame.font.SysFont("monospace", 36)
@@ -224,55 +203,8 @@ print "loading background.."
 img = pygame.image.load("images/bg.png")
 
 
-print "Init Serial"
-rt = RaceTrack(settings.serial_port)
-
-rt.add_round_listener(catch_round_result)
-
-
-print "connect to online services"
-if send_to_fb:
-    sw = StreamWriter()
-
-    def send_to_streams(new_round_info):
-        start = timer()
-        print("new round info: ", new_round_info)
-        PiFire.PiFire.write_async(new_round_info)
-        sw.write_async(new_round_info)
-        end = timer()
-        print('took us: ', end - start)
-
-
-    rt.add_round_listener(send_to_streams)
-else:
-    print "connecting to fb skipped.."
-
-
-def reset_stream_writer():
-    sw.reset_sw()
-
-def reset_firebase_writer():
-    PiFire.PiFire.reset()
-
-def setup_race():
-    global rounds, cars
-    print("##########################")
-    print("## START NEW RACE       ##")
-    print("##########################")
-    rounds = []
-    cars = {}
-    if send_to_fb:
-        reset_stream_writer()
-        reset_firebase_writer()
-
-def track_state(track_state):
-    if track_state.startLamp == 1:
-        setup_race()
-
-
-setup_race()
-
-rt.add_track_state_listener(track_state)
+print "init Race Manager"
+race_manager = RaceManager(send_to_fb)
 
 
 # Main loop ----------------------------------------------------------------
@@ -281,7 +213,6 @@ while True:
     # Process touchscreen input
     while True:
         screen_change = 0
-        rt.read_track(False)
         for event in pygame.event.get():
             if event.type is MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
@@ -290,8 +221,8 @@ while True:
                         break
                 screen_change = 1
 
-        if new_round == 1:
-            new_round = 0
+        if race_manager.race_state_counter != race_state_counter_prior:
+            race_state_counter_prior = race_manager.race_state_counter
             break
         if screen_change == 1 or screenMode != screenModePrior:
             break
@@ -308,7 +239,7 @@ while True:
         b.draw(screen)
 
     if screenMode == 0:
-        for idx, result in enumerate(rounds[::-1]):
+        for idx, result in enumerate(race_manager.rounds[::-1]):
             try:
                 text = myfont.render('car ' + str(result['car']) + ' - ' + "{:7.3f}".format(result['time'] / 1000.0) + 's', 1, (10, 10, 10))
                 text_pos = text.get_rect()
@@ -323,7 +254,7 @@ while True:
     if screenMode == 1:
         idx = 0
 
-        for key, car in cars.iteritems():
+        for key, car in race_manager.cars.iteritems():
             try:
                 text = myfont.render('car ' + str(car['car']) + ' - ' + str(car['rounds']) + ' - ' + "{:7.3f}".format(car['fastest'] / 1000.0) + 's', 1, (10, 10, 10))
                 text_pos = text.get_rect()
@@ -338,3 +269,5 @@ while True:
 
 
     pygame.display.update()
+    screenModePrior = screenMode
+

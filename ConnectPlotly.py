@@ -121,6 +121,7 @@ class StreamWriter(object):
 
     def start_async(self):
         if not self.async_worker.is_alive:
+            print("start worker")
             self.async_worker.start()
 
     def _process_async(self):

@@ -287,9 +287,9 @@ rt.add_track_state_listener(track_state)
 while True:
     # Process touchscreen input
     while True:
-        while rt.read_track(False):
-            pass
         screen_change = 0
+        if not rt.read_track(False):
+            break
         for event in pygame.event.get():
             if event.type is MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()

@@ -112,7 +112,7 @@ class RaceTrack(object):
         self.round_listener.append(listener)
 
 
-    def read_track(self, do_sleep = True):
+    def read_track(self, do_sleep=True):
         try:
             state = self.read_state()
             changed = False

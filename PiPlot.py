@@ -11,7 +11,7 @@ import settings
 
 
 import urllib3
-urllib3.disable_warnings()
+
 
 
 class StreamHeartBeat(threading.Thread):
@@ -26,9 +26,11 @@ class StreamHeartBeat(threading.Thread):
             self.stream.heartbeat()
 
 
+
 class StreamWriter(object):
 
     def __init__(self, auto_start=False):
+        urllib3.disable_warnings()
         py.sign_in(settings.plotly_login, settings.plotly_api_key, stream_ids=settings.plotly_stream_ids)
         self.stream_count = 0
         self.streams = {}

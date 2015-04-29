@@ -21,6 +21,7 @@ from pygame.locals import *
 # image (PNG loaded from icons directory) for each.
 # There isn't a globally-declared fixed list of Icons.  Instead, the list
 # is populated at runtime from the contents of the 'icons' directory.
+import time
 from ConnectCarrera import RaceTrackImpl
 from RaceManager import RaceManager
 import settings
@@ -206,6 +207,7 @@ print "init Race Manager"
 race_manager = RaceManager(RaceTrackImpl(settings.serial_port), send_to_fb)
 
 
+race_manager.start()
 # Main loop ----------------------------------------------------------------
 
 while True:
@@ -225,6 +227,8 @@ while True:
             break
         if screen_change == 1 or screenMode != screenModePrior:
             break
+
+        time.sleep(0.01)
 
     if img is None:  # clear background
         screen.fill(0)

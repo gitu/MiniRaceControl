@@ -21,7 +21,6 @@ class RaceManager(object):
             self.sw = StreamWriter()
 
         self.worker = threading.Thread(target=self._reader)
-        self.worker.daemon = True
 
         self.async_process_queue_plotly = Queue()
         self.async_worker_plotly = threading.Thread(target=self._process_async_plotly)
@@ -35,13 +34,16 @@ class RaceManager(object):
         self._rt.add_round_listener(self._catch_round_result)
         self._rt.add_track_state_listener(self._catch_track_state)
 
+
+    def start(self):
         self.async_worker_plotly.start()
         self.async_worker_firebase.start()
         self.worker.start()
 
+
     def _reader(self):
         while True:
-            self._rt.read_track(False)
+            self._rt.read_track(True)
 
     def _catch_round_result(self, nri):
         print('new round: {0}, {1}'.format(nri['car'], nri['time']))

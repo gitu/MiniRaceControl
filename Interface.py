@@ -21,8 +21,7 @@ from pygame.locals import *
 # image (PNG loaded from icons directory) for each.
 # There isn't a globally-declared fixed list of Icons.  Instead, the list
 # is populated at runtime from the contents of the 'icons' directory.
-import ConnectFirebase
-from ConnectPlotly import StreamWriter
+from ConnectCarrera import RaceTrackImpl
 from RaceManager import RaceManager
 import settings
 
@@ -204,7 +203,7 @@ img = pygame.image.load("images/bg.png")
 
 
 print "init Race Manager"
-race_manager = RaceManager(send_to_fb)
+race_manager = RaceManager(RaceTrackImpl(settings.serial_port), send_to_fb)
 
 
 # Main loop ----------------------------------------------------------------

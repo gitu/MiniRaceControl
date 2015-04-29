@@ -1,18 +1,12 @@
-from Queue import Queue
 import random
 import threading
 import datetime
 import time
 
 import plotly.plotly as py
-import plotly.tools as tls
 from plotly.graph_objs import *
 
 import settings
-
-
-import urllib3
-
 
 
 class StreamHeartBeat(threading.Thread):
@@ -31,15 +25,12 @@ class StreamHeartBeat(threading.Thread):
 class StreamWriter(object):
 
     def __init__(self, auto_start=False):
-        urllib3.disable_warnings()
         py.sign_in(settings.plotly_login, settings.plotly_api_key, stream_ids=settings.plotly_stream_ids)
         self.stream_count = 0
         self.streams = {}
         self.heartbeats = {}
         self.reset_sw(auto_start)
-        self.async_queue = Queue()
-        self.async_worker = threading.Thread(target=self._process_async)
-        self.async_worker.daemon = True
+
 
     def reset_sw(self, auto_start=False):
         traces = []
@@ -49,7 +40,7 @@ class StreamWriter(object):
                     x=[],
                     y=[],
                     name='Car ' + str(x + 1),
-                    stream=dict(token=settings.plotly_stream_ids[x], maxpoints=40),
+                    stream=dict(token=settings.plotly_stream_ids[x], maxpoints=100),
                     line=Line(
                         shape='spline'
                     )
@@ -60,8 +51,8 @@ class StreamWriter(object):
             autosize=True,
             xaxis=XAxis(
                 title='Time',
-                showgrid=False,
-                zeroline=False
+                showgrid=True,
+                zeroline=True
             ),
             yaxis=YAxis(
                 title='seconds',
@@ -110,28 +101,15 @@ class StreamWriter(object):
             try:
                 stream.write({'x': x, 'y': y})
                 stream.close()
-            except:
-                print("trying to reopen stream")
+            except Exception as e1:
+                print("######## trying to reopen stream ########", e1)
                 try:
                     stream.open()
                     stream.write({'x': x, 'y': y})
                     stream.close()
-                except:
-                    print('exception while writing to stream...')
+                except Exception as e2:
+                    print('######## exception while writing to stream... ########', e2)
 
-    def start_async(self):
-        if not self.async_worker.is_alive:
-            print("start worker")
-            self.async_worker.start()
-
-    def _process_async(self):
-        item = self.async_queue.get()
-        self.write(item)
-        self.async_queue.task_done()
-
-    def write_async(self, round_data):
-        self.start_async()
-        self.async_queue.put(round_data)
 
 
 class RandomGen(threading.Thread):

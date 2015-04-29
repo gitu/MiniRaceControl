@@ -258,7 +258,7 @@ while True:
                 text = myfont.render('car ' + str(car['car']) + ' - ' + str(car['rounds']) + ' - ' + "{:7.3f}".format(car['fastest'] / 1000.0) + 's', 1, (10, 10, 10))
                 text_pos = text.get_rect()
                 text_pos.centerx = screen.get_rect().centerx
-                text_pos.top = idx * myfont.gyet_linesize() + 80
+                text_pos.top = idx * myfont.get_linesize() + 80
                 screen.blit(text, text_pos)
                 idx += 1
                 if idx > 3:

@@ -180,6 +180,22 @@ pygame.init()
 pygame.mouse.set_visible(False)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
+print "loading background.."
+img = pygame.image.load("images/bg.png")
+
+if img:
+    screen.blit(img,
+                ((480 - img.get_width()) / 2,
+                 (320 - img.get_height()) / 2))
+
+
+loading_text = myfont.render('STARTING SYSTEM', 1, (10, 10, 10))
+loading_text_pos = loading_text.get_rect()
+loading_text_pos.centerx = screen.get_rect().centerx
+loading_text_pos.top = myfont.get_linesize() + 80
+screen.blit(loading_text, loading_text_pos)
+
+
 print "Loading Icons..."
 # Load all icons at startup.
 for icon_file in os.listdir(iconPath):
@@ -197,17 +213,6 @@ for s in buttons:  # For each screenful of buttons...
             if b.fg == i.name:
                 b.iconFg = i
                 b.fg = None
-
-print "loading background.."
-img = pygame.image.load("images/bg.png")
-
-if img is None:  # clear background
-    screen.fill(0)
-if img:
-    screen.blit(img,
-                ((480 - img.get_width()) / 2,
-                 (320 - img.get_height()) / 2))
-
 
 
 print "init Race Manager"
@@ -241,14 +246,7 @@ while True:
                     ((480 - img.get_width()) / 2,
                      (320 - img.get_height()) / 2))
 
-    loading_text = myfont.render('STARTING SYSTEM', 1, (10, 10, 10))
-    loading_text_pos = loading_text.get_rect()
-    loading_text_pos.centerx = screen.get_rect().centerx
-    loading_text_pos.top = myfont.gyet_linesize() + 80
-    screen.blit(loading_text, loading_text_pos)
-
-
-# Overlay buttons on display and update
+    # Overlay buttons on display and update
     for i, b in enumerate(buttons[screenMode]):
         b.draw(screen)
 

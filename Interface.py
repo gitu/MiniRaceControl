@@ -145,10 +145,10 @@ myfont = pygame.font.SysFont("monospace", 36)
 buttons = [
     [Button((0, 0, 80, 52), bg='prev', cb=setting_callback, value=-1),
      Button((400, 0, 80, 52), bg='next', cb=setting_callback, value=1),
-     Button((0, 10, 480, 35), bg='stats')],
+     Button((0, 10, 480, 35), bg='console')],
     [Button((0, 0, 80, 52), bg='prev', cb=setting_callback, value=-1),
      Button((400, 0, 80, 52), bg='next', cb=setting_callback, value=1),
-     Button((0, 10, 480, 35), bg='console')],
+     Button((0, 10, 480, 35), bg='stats')],
     [Button((0, 0, 80, 52), bg='prev', cb=setting_callback, value=-1),
      Button((400, 0, 80, 52), bg='next', cb=setting_callback, value=1),
      Button((190, 80, 100, 120), bg='quit-ok', cb=quit_callback),
@@ -201,6 +201,14 @@ for s in buttons:  # For each screenful of buttons...
 print "loading background.."
 img = pygame.image.load("images/bg.png")
 
+if img is None:  # clear background
+    screen.fill(0)
+if img:
+    screen.blit(img,
+                ((480 - img.get_width()) / 2,
+                 (320 - img.get_height()) / 2))
+
+
 
 print "init Race Manager"
 race_manager = RaceManager(RaceTrackImpl(settings.serial_port), send_to_fb)
@@ -233,7 +241,14 @@ while True:
                     ((480 - img.get_width()) / 2,
                      (320 - img.get_height()) / 2))
 
-    # Overlay buttons on display and update
+    loading_text = myfont.render('STARTING SYSTEM', 1, (10, 10, 10))
+    loading_text_pos = loading_text.get_rect()
+    loading_text_pos.centerx = screen.get_rect().centerx
+    loading_text_pos.top = myfont.gyet_linesize() + 80
+    screen.blit(loading_text, loading_text_pos)
+
+
+# Overlay buttons on display and update
     for i, b in enumerate(buttons[screenMode]):
         b.draw(screen)
 

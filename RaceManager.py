@@ -41,7 +41,7 @@ class RaceManager(object):
 
     def _reader(self):
         while True:
-            self._rt.read_track(True)
+            self._rt.read_track(False)
 
     def _catch_round_result(self, nri):
         print('new round: {0}, {1}'.format(nri['car'], nri['time']))

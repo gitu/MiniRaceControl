@@ -140,9 +140,10 @@ class RaceTrackImpl(RaceTrack):
         self._readline()
 
 
-    def _readline(self, eol='$'):
+    def _readline(self, eol='$\n'):
         len_eol = len(eol)
         line = bytearray()
+        count = 0
         while True:
             c = self.ser.read(1)
             if c:
@@ -150,16 +151,21 @@ class RaceTrackImpl(RaceTrack):
                 if line[-len_eol:] == eol:
                     break
             else:
-                break
+                count += 1
+                if count > 2:
+                   break
         return bytes(line)
 
     def _read_state(self):
-        self.ser.write('"?')
+        #print("get state")
         result = self._readline()
+        #print("got state: " + result)
         if result.startswith('?:'):
             return TrackState(result)
-        else:
+        elif result.startswith('?'):
             return TimeResult(result)
+        else:
+            print("ignored result: " + result)
 
 
 

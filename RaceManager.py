@@ -4,7 +4,6 @@ import threading
 import time
 
 import ConnectFirebase
-from ConnectPlotly import StreamWriter
 from ConnectCarrera import RaceTrack, TimeResult, TrackState
 
 
@@ -16,9 +15,6 @@ class RaceManager(object):
 
         self.rounds = []
         self.cars = {}
-
-        if export_data:
-            self.sw = StreamWriter()
 
         self.worker = threading.Thread(target=self._reader)
 
@@ -61,14 +57,10 @@ class RaceManager(object):
         self.race_state_counter += 1
 
         if self._export_data:
-            def send_plotly():
-                self.sw.write(nri)
-
             def send_firebase():
                 ConnectFirebase.PiFire.write(nri)
 
             self.async_process_queue_firebase.put(send_firebase)
-            self.async_process_queue_plotly.put(send_plotly)
 
 
     def _catch_track_state(self, track_state):
